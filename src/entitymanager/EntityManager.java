@@ -605,5 +605,17 @@ public class EntityManager<T, ID extends Serializable> {
 		}
 		return retVal;
 	}
+	
+	public void remove(String uri) throws IOException
+	{
+		XMLDocumentManager xmlManager = client.newXMLDocumentManager();
+		try{
+			xmlManager.delete(uri);
+			System.out.println("Dokument je uspesno uklonjen iz baze");
+		} catch(Exception e){
+			System.out.println("Ne postoji takav dokument u bazi.");
+		}
+		
+	}
 
 }

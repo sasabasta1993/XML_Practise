@@ -67,5 +67,18 @@ public class AmandmanService {
 			return null;
 		}
 	}
+	
+	@POST
+	@Path("/remove/{uri}")
+	public boolean removeAmandman(@PathParam("uri")String uri)
+	{
+		try {
+			amandmanDao.remove(uri);
+		} catch (IOException e) {
+			System.out.println("Greska prilikom brisanja akta ili amandmana");
+			return false;
+		}
+		return true;
+	}
 
 }

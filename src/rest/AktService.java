@@ -133,4 +133,17 @@ public class AktService {
 			return null;
 		}
 	}
+	
+	@POST
+	@Path("/remove/{uri}")
+	public boolean removeAmandman(@PathParam("uri")String uri)
+	{
+		try {
+			aktDao.remove(uri);
+		} catch (IOException e) {
+			System.out.println("Greska prilikom brisanja akta ili amandmana");
+			return false;
+		}
+		return true;
+	}
 }

@@ -78,6 +78,12 @@ public abstract class GenericDao <T, ID extends Serializable> implements Generic
 	public List<T> findProposed(String name) throws IOException, JAXBException {
 		return (List<T>)em.findProposed(name);
 	}
+	
+	@Override
+	public void remove(String id) throws IOException {
+		em.remove(id);
+		
+	}
 
 	
 } 
