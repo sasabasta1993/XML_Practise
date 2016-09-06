@@ -190,6 +190,7 @@ public class EntityManager<T, ID extends Serializable> {
 			try{
 				DocumentDescriptor dsc = xmlManager.exists(id);
 				System.out.println(dsc.getUri());
+				System.out.println("Vec postoji akt za zadatim ID-em!");
 			}catch(Exception e)
 			{
 				System.out.println("3");
@@ -207,32 +208,18 @@ public class EntityManager<T, ID extends Serializable> {
 				// Set the default media type (RDF/XML)
 				graphManager.setDefaultMimetype(RDFMimeTypes.RDFXML);
 				System.out.println("8");
-				
+				System.out.println("Akt je sacuvan u bazu podataka.");
 				XMLMarshall.objectToFile(entity);
-				/* srediti ovo ako bude bilo vremena
-				metadataExtractor.extractMetadata(
-						new FileInputStream(new File(xmlFilePath)), 
-						new FileOutputStream(new File(rdfFilePath)));
-				
-				FileHandle rdfFileHandle =
-						new FileHandle(new File(rdfFilePath))
-						.withMimetype(RDFMimeTypes.RDFXML);
-				
-				String SPARQL_NAMED_GRAPH_URI = "grafovi";
-				graphManager.merge(SPARQL_NAMED_GRAPH_URI, rdfFileHandle);
-				*/
+
 			}
 			
 
 		}else if(entity instanceof Amandman)
-		{
-			System.out.println("za sad sam samo ovde");
-			
+		{	
 			DocumentMetadataHandle metadata = new DocumentMetadataHandle();
 			metadata.getCollections().add(CollectionConstants.amandmanProcedura);
 			metadata.getCollections().add(CollectionConstants.amandmani);
 			DocumentUriTemplate template = xmlManager.newDocumentUriTemplate("xml");
-			template.setDirectory(id+"/");
 			DocumentDescriptor desc = xmlManager.create(template, metadata, handle);
 			
 		}
@@ -481,7 +468,7 @@ public class EntityManager<T, ID extends Serializable> {
 							+ " glasanja za pojedinacne amandmane koji se odnose na ovaj akt.";
 					break;
 				} else{
-					retVal = "Trazeni akt nije u proceduri.";
+					retVal = "Trazeni akt nije stavljen u proceduru.";
 				}
 			}
 		}
@@ -541,14 +528,14 @@ public class EntityManager<T, ID extends Serializable> {
 						   + " let $z := fn:doc(\"###\")/am:Amandman/am:Kontekst"
 						   + " return (fn:string($x), fn:string ($y), fn:string ($z))";
 			
-			//tu si, prodji kroz kontekste, oni imaju id, ako jejednak prosledjenom, trpaj u listu
+
 			query = query.replace("###",result.getUri());
 			invoker.xquery(query);
 			response = invoker.eval();
-			String s = "";
+			
 			ArrayList<String> podaci = new ArrayList<String>();
 			ArrayList<String> sviIzKolekcije = new ArrayList<String>();
-			//kupim naslove
+			
 			if (response.hasNext()) {
 				for (EvalResult rs : response) {
 					String a = rs.getString();
@@ -563,20 +550,6 @@ public class EntityManager<T, ID extends Serializable> {
 					}
 				}
 			}
-			/**
-			 * 
-			 * if(rs.getString().equals(name)){
-						podaci.add(rs.getString());
-					}
-			 * for (EvalResult result :response) {
-						lista.add(result.getString());			
-				System.out.println("\n" + result.getString());
-			}
-			for(int i=0;i<lista.size();i=i+2){
-				proc.add(new SearchResultNameId(lista.get(i+1),lista.get(i)));
-			}
-			 */
-			
 			listaAmandmana.add(podaci);
 		}
 		
