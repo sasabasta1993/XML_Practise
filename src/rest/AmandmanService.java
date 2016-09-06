@@ -1,10 +1,13 @@
 package rest;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.ejb.EJB;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBException;
@@ -36,6 +39,19 @@ public class AmandmanService {
 			}
 		}
 		return true;
+	}
+	
+	//ovaj vraca vezano za odredjeni akt
+	@GET
+	@Path("/uProceduri/{nazivZakona}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<Object> getAktiProcedura(@PathParam("nazivZakona")String name){
+		try {
+			return amandmanDao.findProposed(name);
+		} catch (IOException | JAXBException e) {
+			System.out.println("Doslo je do greske!");
+			return null;
+		}
 	}
 
 }

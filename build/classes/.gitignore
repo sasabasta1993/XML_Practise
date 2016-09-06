@@ -1,7 +1,4 @@
-/model/
-/rest/
-/rs/
-/util/
-/validation/
-/entitymanager/
 /dao/
+/rest/
+/entitymanager/
+/util/

@@ -23,6 +23,7 @@ import org.xml.sax.SAXException;
 import model.akt.Akt;
 import model.amandman.Amandman;
 import model.korisnici.Korisnici;
+import util.AmandmanGetter;
 import util.MetadataExtractor;
 import util.Transformations;
 import util.SearchResultsUtil;
@@ -326,7 +327,7 @@ public class EntityManager<T, ID extends Serializable> {
 		//EvalResultIterator response = null;
 		
 		
-ServerEvaluationCall invoker = client.newServerEval();
+		ServerEvaluationCall invoker = client.newServerEval();
 		
 		// Read the file contents into a string object
 		String query = readFile("../webapps/xws_xmldb/data/xquery/findByDate.sqy", StandardCharsets.UTF_8);
@@ -493,6 +494,94 @@ ServerEvaluationCall invoker = client.newServerEval();
 	public static String readFile(String path, Charset encoding) throws IOException {
 		byte[] encoded = Files.readAllBytes(Paths.get(path));
 		return new String(encoded, encoding);
+	}
+	
+	//metoda koja vraca sve predlozene amandmane za trazeni akt
+	public List<Object> findProposed(String name) {
+		
+		List<Object> listaAmandmana = new ArrayList<Object>();
+
+		QueryManager queryManager = client.newQueryManager();
+		
+		// Query definition is used to specify Google-style query string
+		StringQueryDefinition queryDefinition = queryManager.newStringDefinition();
+		queryDefinition.setCollections(CollectionConstants.amandmanProcedura);
+		
+		// Set the criteria
+		String criteria = "";
+		queryDefinition.setCriteria(criteria);
+		
+		SearchHandle results = queryManager.search(queryDefinition, new SearchHandle());
+		
+		// Serialize search results to the standard output
+		MatchDocumentSummary matches[] = results.getMatchResults();
+		System.out.println(matches.length);
+		MatchDocumentSummary result;
+		
+		EvalResultIterator response = null;
+		
+		for (int i = 0; i < matches.length; i++) {
+			result = matches[i];
+			
+			//detaljnije o SEC na: https://docs.marklogic.com/javadoc/client/com/marklogic/client/eval/ServerEvaluationCall.html
+			ServerEvaluationCall invoker = client.newServerEval();
+			
+			/*	ovako bi pisao u konzoli marklogic-a:
+			 * 
+			 *	declare namespace sk="http://www.ftn.uns.ac.rs/skupstina";
+			 *	let $x := fn:doc("primerID")/am:Amandman/am:Kontekst/@Referentni_zakon
+			 *  let $y := fn:doc("9827906689336955896.xml")/am:Amandman/@Naziv
+ 			 *  let $z := fn:doc("9827906689336955896.xml")/am:Amandman/am:Kontekst
+			 *	return (fn:string($x), fn:string ($y), fn:string ($z))
+			 */
+			
+			String query = "declare namespace am = \"http://www.ftn.uns.ac.rs/amandman\";"
+						   + "let $x := fn:doc(\"###\")/am:Amandman/am:Kontekst/@Referentni_zakon"
+						   + " let $y := fn:doc(\"###\")/am:Amandman/@Naziv"
+						   + " let $z := fn:doc(\"###\")/am:Amandman/am:Kontekst"
+						   + " return (fn:string($x), fn:string ($y), fn:string ($z))";
+			
+			//tu si, prodji kroz kontekste, oni imaju id, ako jejednak prosledjenom, trpaj u listu
+			query = query.replace("###",result.getUri());
+			invoker.xquery(query);
+			response = invoker.eval();
+			String s = "";
+			ArrayList<String> podaci = new ArrayList<String>();
+			ArrayList<String> sviIzKolekcije = new ArrayList<String>();
+			//kupim naslove
+			if (response.hasNext()) {
+				for (EvalResult rs : response) {
+					String a = rs.getString();
+					System.out.println(a);
+					sviIzKolekcije.add(rs.getString());
+				}
+				for(int j=0; j<sviIzKolekcije.size(); j=j+3){
+					if((sviIzKolekcije.get(j)).equals(name)){
+						
+						listaAmandmana.add(new AmandmanGetter(sviIzKolekcije.get(j+1), 
+									sviIzKolekcije.get(j+2), result.getUri()));
+					}
+				}
+			}
+			/**
+			 * 
+			 * if(rs.getString().equals(name)){
+						podaci.add(rs.getString());
+					}
+			 * for (EvalResult result :response) {
+						lista.add(result.getString());			
+				System.out.println("\n" + result.getString());
+			}
+			for(int i=0;i<lista.size();i=i+2){
+				proc.add(new SearchResultNameId(lista.get(i+1),lista.get(i)));
+			}
+			 */
+			
+			listaAmandmana.add(podaci);
+		}
+		
+		return listaAmandmana;
+		
 	}
 
 }

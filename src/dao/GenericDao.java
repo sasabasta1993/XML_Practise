@@ -67,6 +67,12 @@ public abstract class GenericDao <T, ID extends Serializable> implements Generic
 		
 		return em.findByMetaData2(dateFrom, dateTo);
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<T> findProposed(String name) throws IOException, JAXBException {
+		return (List<T>)em.findProposed(name);
+	}
 
 	
 } 

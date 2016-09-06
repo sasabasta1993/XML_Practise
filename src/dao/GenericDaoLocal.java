@@ -21,5 +21,7 @@ public interface GenericDaoLocal<T, ID extends Serializable> {
 	public List<Object> findByMetaData(String dateFrom, String dateTo) throws IOException;
 
 	public List<Object> findByMetaData2(String dateFrom, String dateTo) throws IOException;
+	
+	public List<T> findProposed(String name) throws IOException, JAXBException;
 
 } 
