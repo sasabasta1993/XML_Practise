@@ -1,0 +1,11 @@
+xquery version "1.0-ml";-
+
+declare namespace ns2="http://www.ftn.uns.ac.rs/skupstina";
+
+
+let $korisnici :=collection("akt_u_proceduri")
+
+for $x in $korisnici
+let $date      :=($x/ns2:Akt/ns2:MetaPodaci/ns2:DatumPredlaganja)
+where (((xs:date("dateFromParam"))>$date) and ($date>(xs:date("dateToParam"))))
+return (data($x/ns2:Akt/ns2:Id),data($x/ns2:Akt/ns2:Naslov))
