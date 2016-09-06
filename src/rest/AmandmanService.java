@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.ejb.EJB;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -48,6 +49,19 @@ public class AmandmanService {
 	public List<Object> getAktiProcedura(@PathParam("nazivZakona")String name){
 		try {
 			return amandmanDao.findProposed(name);
+		} catch (IOException | JAXBException e) {
+			System.out.println("Doslo je do greske!");
+			return null;
+		}
+	}
+	
+	@GET
+	@Path("/glasanjeAmandman/{uri}/{za}/{uzdrani}/{protiv}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public String glasanje(@PathParam("uri")String uri, @PathParam("za")String za,
+			@PathParam("uzdrani")String uzdrzani, @PathParam("protiv")String protiv){
+		try {
+			return amandmanDao.voteAmandman(uri, za, uzdrzani, protiv);
 		} catch (IOException | JAXBException e) {
 			System.out.println("Doslo je do greske!");
 			return null;

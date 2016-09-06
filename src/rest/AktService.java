@@ -122,7 +122,7 @@ public class AktService {
 	}
 	
 	@GET
-	@Path("/glasanje/{id}/{za}/{uzdrani}/{protiv}")
+	@Path("/glasanjeAkt/{id}/{za}/{uzdrani}/{protiv}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public String glasanje(@PathParam("id")String id, @PathParam("za")String za,
 			@PathParam("uzdrani")String uzdrzani, @PathParam("protiv")String protiv){

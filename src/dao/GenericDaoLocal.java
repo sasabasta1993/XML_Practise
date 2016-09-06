@@ -18,6 +18,8 @@ public interface GenericDaoLocal<T, ID extends Serializable> {
 	
 	public String vote(String id, String za, String uzdrzani, String protiv) throws IOException, JAXBException;
 	
+	public String voteAmandman(String id, String za, String uzdrzani, String protiv) throws IOException, JAXBException;
+	
 	public List<Object> findByMetaData(String dateFrom, String dateTo) throws IOException;
 
 	public List<Object> findByMetaData2(String dateFrom, String dateTo) throws IOException;

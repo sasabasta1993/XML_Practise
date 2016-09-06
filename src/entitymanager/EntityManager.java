@@ -459,11 +459,11 @@ public class EntityManager<T, ID extends Serializable> {
 				if (result.getUri().toString().equals(id)){
 					
 					String query = "declare namespace sk = \"http://www.ftn.uns.ac.rs/skupstina\";"
-							+"xdmp:document-set-collections(\"###\", (\"akti\", \"akt_prihvacen_u_nacelu\"))";
+							+"xdmp:document-set-collections(\"###\", (\"akti\", \"prihvacen_akt\"))";
 					query = query.replace("###",result.getUri());
 					invoker.xquery(query);
 					response = invoker.eval();
-					retVal = "Akt je prihvacen, prostim vecniskim glasanjem."
+					retVal = "Akt je prihvacen, prostim vecinskim glasanjem."
 							+ " Akt je sada prihvacen u nacelu. Bice prihvacen u celosti nakon"
 							+ " glasanja za pojedinacne amandmane koji se odnose na ovaj akt.";
 					break;
@@ -555,6 +555,55 @@ public class EntityManager<T, ID extends Serializable> {
 		
 		return listaAmandmana;
 		
+	}
+	
+	public String voteAmandman(String id, String za, String uzdrzani, String protiv){
+		int glasZa = Integer.parseInt(za);
+		int glasUzdrzan = Integer.parseInt(uzdrzani);
+		int glasProtiv = Integer.parseInt(protiv);
+		
+		String retVal = null;
+		
+		System.out.println(id + " " + glasZa + " " + glasUzdrzan + " " + glasProtiv );
+		
+		if ((glasUzdrzan + glasProtiv ) >= glasZa){
+			retVal = "Amandman nije usvojen. Nije bilo vecinske podrske.";
+			return retVal;
+		} else {
+			
+			QueryManager queryManager = client.newQueryManager();
+			StringQueryDefinition queryDefinition = queryManager.newStringDefinition();
+			queryDefinition.setCollections(CollectionConstants.amandmanProcedura);
+			
+			String criteria = "";
+			queryDefinition.setCriteria(criteria);
+			SearchHandle results = queryManager.search(queryDefinition, new SearchHandle());
+			
+			MatchDocumentSummary matches[] = results.getMatchResults();
+			MatchDocumentSummary result;
+			EvalResultIterator response = null;
+			
+			for (int i = 0; i < matches.length; i++) {
+				
+				result = matches[i];
+				ServerEvaluationCall invoker = client.newServerEval();
+				
+				if (result.getUri().toString().equals(id)){
+					
+					String query = "declare namespace am = \"http://www.ftn.uns.ac.rs/amandman\";"
+							+"xdmp:document-set-collections(\"###\", (\"amandmani\", \"prihvacen_amandman\"))";
+					query = query.replace("###",result.getUri());
+					invoker.xquery(query);
+					response = invoker.eval();
+					retVal = "Amandman je prihvacen, prostim vecinskim glasanjem. "
+							+ " Akt na koji se amandman odnosi je sada azuriran. Cao zdravo :D";
+					break;
+				} else{
+					retVal = "Trazeni Amandman nije predlozen.";
+				}
+			}
+		}
+		return retVal;
 	}
 
 }

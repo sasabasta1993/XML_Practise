@@ -55,6 +55,11 @@ public abstract class GenericDao <T, ID extends Serializable> implements Generic
 	public String vote(String id, String za, String uzdrzani, String protiv) throws IOException, JAXBException{
 		return (String)em.vote(id, za, uzdrzani, protiv);
 	}
+	
+	@Override
+	public String voteAmandman(String id, String za, String uzdrzani, String protiv) throws IOException, JAXBException{
+		return (String)em.voteAmandman(id, za, uzdrzani, protiv);
+	}
 
 	@Override
 	
