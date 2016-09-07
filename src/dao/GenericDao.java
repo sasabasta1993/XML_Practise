@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
 
 import org.xml.sax.SAXException;
@@ -83,6 +84,18 @@ public abstract class GenericDao <T, ID extends Serializable> implements Generic
 	public void remove(String id) throws IOException {
 		em.remove(id);
 		
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public T primeniNaAkt(String naziv, String idZakona) throws IOException, JAXBException {
+		try {
+			em.primeniAmandmanNaAkt(naziv, idZakona);
+		} catch (XMLStreamException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return (T)naziv;
 	}
 
 	

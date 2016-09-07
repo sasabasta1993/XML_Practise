@@ -7,6 +7,7 @@ import javax.ejb.EJB;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -76,6 +77,19 @@ public class AmandmanService {
 			amandmanDao.remove(uri);
 		} catch (IOException e) {
 			System.out.println("Greska prilikom brisanja akta ili amandmana");
+			return false;
+		}
+		return true;
+	}
+	
+	@PUT
+	@Path("/izglasan/{amandmanUri}/{idZakona}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public boolean primeniAmandmanNaAkt(@PathParam("amandmanUri")String amandmanUri, @PathParam("idZakona")String idZakona){
+		try {
+			amandmanDao.primeniNaAkt(amandmanUri, idZakona);
+		} catch (IOException | JAXBException e) {
+			System.out.println("Amandman nije spojen sa aktom.");
 			return false;
 		}
 		return true;

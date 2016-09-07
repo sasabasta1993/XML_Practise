@@ -27,5 +27,7 @@ public interface GenericDaoLocal<T, ID extends Serializable> {
 	public List<T> findProposed(String name) throws IOException, JAXBException;
 	
 	public void remove(String id) throws IOException;
+	
+	public T primeniNaAkt(String naziv, String idZakona) throws IOException, JAXBException;
 
 } 

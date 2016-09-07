@@ -16,6 +16,7 @@ import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
 
 import org.xml.sax.SAXException;
@@ -24,7 +25,6 @@ import model.akt.Akt;
 import model.amandman.Amandman;
 import model.korisnici.Korisnici;
 import util.AmandmanGetter;
-import util.MetadataExtractor;
 import util.Transformations;
 import util.SearchResultsUtil;
 import util.StringConstants;
@@ -195,27 +195,13 @@ public class EntityManager<T, ID extends Serializable> {
 			{
 				System.out.println("3");
 				xmlManager.write(id ,metadata ,handle);
-				System.out.println("4");
-				String xmlFilePath = "temp.xml";
-				String rdfFilePath = "rdf.rdf";
-				System.out.println("5");
-				
-				
-				MetadataExtractor metadataExtractor = new MetadataExtractor();
-				System.out.println("6");
-				GraphManager graphManager = client.newGraphManager();
-				System.out.println("7");
-				// Set the default media type (RDF/XML)
-				graphManager.setDefaultMimetype(RDFMimeTypes.RDFXML);
-				System.out.println("8");
+
 				System.out.println("Akt je sacuvan u bazu podataka.");
 				XMLMarshall.objectToFile(entity);
 
 			}
+		}else if(entity instanceof Amandman){
 			
-
-		}else if(entity instanceof Amandman)
-		{	
 			DocumentMetadataHandle metadata = new DocumentMetadataHandle();
 			metadata.getCollections().add(CollectionConstants.amandmanProcedura);
 			metadata.getCollections().add(CollectionConstants.amandmani);
@@ -616,6 +602,96 @@ public class EntityManager<T, ID extends Serializable> {
 			System.out.println("Ne postoji takav dokument u bazi.");
 		}
 		
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void primeniAmandmanNaAkt(String amandmanUri, String idZakona) throws IOException, JAXBException, XMLStreamException {
+		
+		XMLDocumentManager xmlManager = client.newXMLDocumentManager();
+		JAXBContext context = JAXBContext.newInstance("model.amandman");
+		JAXBHandle content = new JAXBHandle(context);
+		DocumentMetadataHandle metadata = new DocumentMetadataHandle();
+		xmlManager.read(amandmanUri, metadata, content);
+		Amandman doc = (Amandman)content.get();
+		String aa = doc.getKontekst().getValue().toString();
+		System.out.println(aa);
+		
+		String query = "";
+				
+		
+		if(doc.getOperacija().equals("deleteNode")){
+			query = "xquery version \"1.0-ml\";" + 
+					"declare namespace sk = \"http://www.ftn.uns.ac.rs/skupstina\";" +
+					"xdmp:node-delete(doc(\"zakon\")odnosiSeNa)";
+	
+			query = query.replace("zakon", idZakona);
+			query = query.replace("odnosiSeNa",doc.getKontekst().getValue());
+			//query = query.replace("amandman", XMLMarshall.amandmanConversion(doc));
+			
+			
+			ServerEvaluationCall invoker = client.newServerEval();
+			invoker.xquery(query);
+			
+			EvalResultIterator response = invoker.eval();
+			// menjanje amandmanove kolekcije nakon sto se izvrsio
+			metadata.getCollections().clear();
+			metadata.getCollections().add(CollectionConstants.amandmanPrihvacen);
+			metadata.getCollections().add(CollectionConstants.amandmani);
+			InputStreamHandle handle = new InputStreamHandle(XMLMarshall.objectoToXML(doc));
+			xmlManager.write(amandmanUri ,metadata ,handle);
+		}
+		
+		switch(doc.getOperacija())
+		{
+
+		case "insertAfter":
+			//info: https://docs.marklogic.com/xdmp:node-insert-after
+			query = "xquery version \"1.0-ml\";" + 
+					"declare namespace sk = \"http://www.ftn.uns.ac.rs/skupstina\";" +
+					"xdmp:node-insert-after(doc(\"zakon\")odnosiSeNa,amandman)";
+	
+			query = query.replace("zakon", idZakona);
+			query = query.replace("odnosiSeNa",doc.getKontekst().getValue());
+			query = query.replace("amandman", XMLMarshall.amandmanConversion(doc));
+			
+			break;
+		
+		case "deleteNode":
+			query = StringConstants.getExecutable(OperationType.deleteNode);
+			query = query.replace("replace1", doc.getKontekst().getReferentniZakon());
+			query = query.replace("replace2", doc.getKontekst().getValue() );
+			break;
+		case "insertBefore":
+			query = StringConstants.getExecutable(OperationType.insertBefore);
+			query = query.replace("replace1", doc.getKontekst().getReferentniZakon());
+			query = query.replace("replace2",doc.getKontekst().getValue() );
+			query = query.replace("replace3", XMLMarshall.amandmanConversion(doc));
+			break;
+		case "insertChild":
+			query = StringConstants.getExecutable(OperationType.insertChild);
+			query = query.replace("replace1", doc.getKontekst().getReferentniZakon());
+			query = query.replace("replace2",doc.getKontekst().getValue() );
+			query = query.replace("replace3", XMLMarshall.amandmanConversion(doc));
+			break;
+		case "replaceNode":
+			query = StringConstants.getExecutable(OperationType.replaceNode);
+			query = query.replace("replace1", doc.getKontekst().getReferentniZakon());
+			query = query.replace("replace2", doc.getKontekst().getValue());
+			query = query.replace("replace3", XMLMarshall.amandmanConversion(doc));
+			break;
+		}
+		/*
+		ServerEvaluationCall invoker = client.newServerEval();
+		invoker.xquery(query);
+		
+		EvalResultIterator response = invoker.eval();
+		// menjanje amandmanove kolekcije nakon sto se izvrsio
+		metadata.getCollections().clear();
+		metadata.getCollections().add(CollectionConstants.amandmanPrihvacen);
+		metadata.getCollections().add(CollectionConstants.amandmani);
+		InputStreamHandle handle = new InputStreamHandle(XMLMarshall.objectoToXML(doc));
+		xmlManager.write(amandmanUri ,metadata ,handle);
+		*/
 	}
 
 }
