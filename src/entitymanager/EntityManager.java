@@ -639,6 +639,33 @@ public class EntityManager<T, ID extends Serializable> {
 			metadata.getCollections().add(CollectionConstants.amandmani);
 			InputStreamHandle handle = new InputStreamHandle(XMLMarshall.objectoToXML(doc));
 			xmlManager.write(amandmanUri ,metadata ,handle);
+			
+		}else if(doc.getOperacija().equals("insertAfter")){
+			query = "xquery version \"1.0-ml\";" + 
+					"declare namespace sk = \"http://www.ftn.uns.ac.rs/skupstina\";" +
+					"xdmp:node-insert-after(doc(\"zakon\")odnosiSeNa, tekstDodatka)";
+	
+			query = query.replace("zakon", idZakona);
+			query = query.replace("odnosiSeNa",doc.getKontekst().getValue());
+			
+			if(doc.getSadrzaj().getTipSadrzaja().equals("stav")){
+				query = query.replace("tekstDodatka", "<Stav Redni_broj=\""
+						+ doc.getSadrzaj().getStav().getRedniBroj() + "\">"
+						+ doc.getSadrzaj().getStav().getContent().toString() + "</Stav>");
+			}else{
+				System.out.println("ne ide ne ideee");
+			}
+			
+			ServerEvaluationCall invoker = client.newServerEval();
+			invoker.xquery(query);
+			
+			EvalResultIterator response = invoker.eval();
+			// menjanje amandmanove kolekcije nakon sto se izvrsio
+			metadata.getCollections().clear();
+			metadata.getCollections().add(CollectionConstants.amandmanPrihvacen);
+			metadata.getCollections().add(CollectionConstants.amandmani);
+			InputStreamHandle handle = new InputStreamHandle(XMLMarshall.objectoToXML(doc));
+			xmlManager.write(amandmanUri ,metadata ,handle);
 		}
 		
 		switch(doc.getOperacija())
